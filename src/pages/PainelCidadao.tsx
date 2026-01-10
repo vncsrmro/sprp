@@ -63,6 +63,7 @@ export default function PainelCidadao() {
                         email: 'steam@linked.account',
                         avatar: user.avatar,
                         wlStatus: user.whitelisted ? 'approved' : 'pending',
+                        groups: user.groups || [] // Parse groups
                     });
                     setIsLoggedIn(true);
                 } catch { }
@@ -116,7 +117,7 @@ export default function PainelCidadao() {
                     </div>
 
                     {/* Dashboard Grid */}
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                         {/* Sidebar */}
                         <div className="lg:col-span-3">
                             <PainelSidebar
@@ -132,26 +133,23 @@ export default function PainelCidadao() {
                             {isLoggedIn ? (
                                 <PainelTabs userData={userData} />
                             ) : (
-                                <div className="bg-gradient-to-b from-[#1a1a2e] to-[#16162a] rounded-2xl p-12 border border-white/5 text-center">
+                                <div className="bg-[#10101a] rounded-3xl p-12 border border-white/5 text-center flex flex-col items-center justify-center min-h-[400px]">
                                     <div className="max-w-md mx-auto">
-                                        <div className="w-20 h-20 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                                            <svg className="w-10 h-10 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <div className="w-20 h-20 bg-[#FFD700]/10 rounded-full flex items-center justify-center mx-auto mb-8 animate-pulse">
+                                            <svg className="w-10 h-10 text-[#FFD700]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                                             </svg>
                                         </div>
-                                        <h2 className="text-2xl font-bold text-white mb-3">
+                                        <h2 className="text-3xl font-black text-white mb-4 italic uppercase">
                                             Acesso Restrito
                                         </h2>
-                                        <p className="text-white/50 mb-6">
+                                        <p className="text-gray-400 mb-8 leading-relaxed">
                                             Para visualizar seus dados, histórico de compras e VIPs, você precisa estar conectado com sua conta Steam.
                                         </p>
                                         <button
                                             onClick={handleLogin}
-                                            className="inline-flex items-center gap-2 px-6 py-3 bg-[#1b2838] hover:bg-[#2a475e] border border-[#4c6b8a] rounded-lg text-white font-medium transition-all duration-300"
+                                            className="px-8 py-4 bg-[#FFD700] hover:bg-amber-400 text-black font-black uppercase italic tracking-wider rounded-xl transition-all hover:scale-105"
                                         >
-                                            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                                                <path d="M12 2C6.48 2 2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95 0-5.52-4.48-10-10-10z" />
-                                            </svg>
                                             Conectar com Steam
                                         </button>
                                     </div>

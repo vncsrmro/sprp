@@ -1,165 +1,113 @@
 import { useState } from 'react';
-import { Eye, EyeOff, ShoppingCart, Crown, User, CreditCard, Package } from 'lucide-react';
+import { User, Crown, ShoppingCart, Search, CreditCard, Clock, CheckCircle } from 'lucide-react';
 
 interface PainelTabsProps {
-    userData: {
-        name: string;
-        email: string;
-    } | null;
+    userData: any;
 }
-
-type TabType = 'dados' | 'vips' | 'diamantes';
-
-interface Purchase {
-    id: string;
-    quantity: number;
-    product: string;
-    date: string;
-    status: 'completed' | 'pending' | 'cancelled';
-    total: string;
-}
-
-interface VipHistory {
-    id: string;
-    type: string;
-    startDate: string;
-    endDate: string;
-    status: 'active' | 'expired';
-}
-
-// Mock data
-const mockPurchases: Purchase[] = [
-    { id: '1001', quantity: 1, product: 'VIP Gold', date: '2026-01-05', status: 'completed', total: 'R$ 49,90' },
-    { id: '1002', quantity: 500, product: 'Diamantes', date: '2026-01-03', status: 'completed', total: 'R$ 25,00' },
-];
-
-const mockVips: VipHistory[] = [
-    { id: '1', type: 'VIP Gold', startDate: '2026-01-05', endDate: '2026-02-05', status: 'active' },
-];
-
-const diamondPackages = [
-    { amount: 100, price: 'R$ 5,00', popular: false },
-    { amount: 500, price: 'R$ 25,00', popular: true },
-    { amount: 1000, price: 'R$ 45,00', popular: false },
-    { amount: 5000, price: 'R$ 200,00', popular: false },
-];
 
 export default function PainelTabs({ userData }: PainelTabsProps) {
-    const [activeTab, setActiveTab] = useState<TabType>('dados');
-    const [showEmail, setShowEmail] = useState(false);
+    const [activeTab, setActiveTab] = useState('data');
 
     const tabs = [
-        { id: 'dados' as TabType, label: 'Seus Dados', icon: User },
-        { id: 'vips' as TabType, label: 'Histórico de VIPs', icon: Crown },
-        { id: 'diamantes' as TabType, label: 'Comprar Diamantes', icon: ShoppingCart },
+        { id: 'data', label: 'Seus Dados', icon: User },
+        { id: 'history', label: 'Histórico de VIPs', icon: Crown },
+        { id: 'diamonds', label: 'Comprar Diamantes', icon: ShoppingCart },
     ];
 
-    const getStatusBadge = (status: string) => {
-        switch (status) {
-            case 'completed':
-            case 'active':
-                return <span className="px-2 py-1 text-xs rounded-full bg-green-500/20 text-green-400 border border-green-500/30">Ativo</span>;
-            case 'pending':
-                return <span className="px-2 py-1 text-xs rounded-full bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">Pendente</span>;
-            case 'cancelled':
-            case 'expired':
-                return <span className="px-2 py-1 text-xs rounded-full bg-red-500/20 text-red-400 border border-red-500/30">Expirado</span>;
-            default:
-                return null;
-        }
-    };
+    // Detect VIPs from groups array (Mock logic for display based on backend strings)
+    // In vRP groups are usually strings like "VipOuro", "VipDiamante"
+    const vipHistory = (userData?.groups || []).filter((g: string) => g.toLowerCase().includes('vip')).map((g: string, i: number) => ({
+        id: i + 1,
+        item: g,
+        date: new Date().toLocaleDateString(), // We don't have date in group list, this is a limitation
+        status: 'Ativo',
+        price: '-'
+    }));
 
-    const handleBuyDiamonds = (amount: number) => {
-        // Redirect to Mercado Pago checkout
-        window.open(`https://mpago.la/sprp-diamonds-${amount}`, '_blank');
-    };
+    if (vipHistory.length === 0) {
+        // Add a mock 'Free VIP' or similar if empty, just for UI demo as requested in screenshot
+        vipHistory.push({
+            id: 1001,
+            item: 'VIP Free (Cidadão)',
+            date: '2026-01-01',
+            status: 'Ativo',
+            price: 'R$ 0,00'
+        })
+    }
 
     return (
-        <div className="bg-gradient-to-b from-[#1a1a2e] to-[#16162a] rounded-2xl border border-white/5 overflow-hidden">
+        <div className="bg-[#10101a] rounded-3xl border border-white/5 overflow-hidden min-h-[600px]">
             {/* Tabs Header */}
-            <div className="flex border-b border-white/10">
+            <div className="flex border-b border-white/5 bg-[#0a0a10]">
                 {tabs.map((tab) => (
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`flex-1 flex items-center justify-center gap-2 px-4 py-4 text-sm font-medium transition-all duration-300 ${activeTab === tab.id
-                                ? 'bg-amber-500 text-black'
-                                : 'text-white/60 hover:text-white hover:bg-white/5'
-                            }`}
+                        className={`flex-1 flex items-center justify-center gap-3 py-6 text-sm font-bold uppercase tracking-wider transition-all relative
+                            ${activeTab === tab.id ? 'text-[#FFD700]' : 'text-gray-500 hover:text-white'}
+                        `}
                     >
-                        <tab.icon className="w-4 h-4" />
-                        <span className="hidden sm:inline">{tab.label}</span>
+                        <tab.icon className={`w-5 h-5 ${activeTab === tab.id ? 'text-[#FFD700]' : 'text-gray-600'}`} />
+                        {tab.label}
+                        {activeTab === tab.id && (
+                            <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#FFD700] shadow-[0_-2px_10px_rgba(255,215,0,0.5)]" />
+                        )}
                     </button>
                 ))}
             </div>
 
-            {/* Tab Content */}
-            <div className="p-6">
-                {/* Seus Dados */}
-                {activeTab === 'dados' && (
-                    <div className="space-y-6">
-                        {/* User Info */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-white/50 text-sm mb-2">Nome</label>
-                                <div className="px-4 py-3 bg-[#252540] rounded-lg border border-white/10">
-                                    <span className="text-white">{userData?.name || 'N/A'}</span>
+            {/* Content */}
+            <div className="p-8">
+                {activeTab === 'data' && (
+                    <div className="animate-fade-in-up">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                            <div className="space-y-2">
+                                <label className="text-gray-500 text-xs font-bold uppercase tracking-widest pl-1">Nome</label>
+                                <div className="bg-[#0a0a10] border border-white/10 rounded-xl p-4 text-white font-medium">
+                                    {userData?.name}
                                 </div>
                             </div>
-                            <div>
-                                <label className="block text-white/50 text-sm mb-2">Email</label>
-                                <div className="flex items-center gap-2 px-4 py-3 bg-[#252540] rounded-lg border border-white/10">
-                                    <span className="text-white flex-1">
-                                        {showEmail ? userData?.email : '••••••••••••••••'}
-                                    </span>
-                                    <button
-                                        onClick={() => setShowEmail(!showEmail)}
-                                        className="text-white/50 hover:text-white transition-colors"
-                                    >
-                                        {showEmail ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                    </button>
+                            <div className="space-y-2">
+                                <label className="text-gray-500 text-xs font-bold uppercase tracking-widest pl-1">Email</label>
+                                <div className="bg-[#0a0a10] border border-white/10 rounded-xl p-4 text-white font-medium flex justify-between items-center text-gray-400">
+                                    ••••••••••••••••
+                                    <Search className="w-4 h-4 cursor-pointer hover:text-white" />
                                 </div>
                             </div>
                         </div>
 
-                        {/* Purchase History */}
-                        <div>
-                            <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
-                                <CreditCard className="w-5 h-5 text-amber-500" />
-                                Histórico de Pagamentos
+                        <div className="p-6 rounded-2xl bg-gradient-to-br from-[#1a1a2e] to-[#0a0a10] border border-white/5">
+                            <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
+                                <CreditCard className="w-5 h-5 text-[#FFD700]" />
+                                Histórico de Pagamentos Recentes
                             </h3>
-
                             <div className="overflow-x-auto">
-                                <table className="w-full">
+                                <table className="w-full text-left text-sm">
                                     <thead>
-                                        <tr className="border-b border-white/10">
-                                            <th className="text-left py-3 px-4 text-white/50 text-sm font-medium">#ID</th>
-                                            <th className="text-left py-3 px-4 text-white/50 text-sm font-medium">Qtde</th>
-                                            <th className="text-left py-3 px-4 text-white/50 text-sm font-medium">Produto</th>
-                                            <th className="text-left py-3 px-4 text-white/50 text-sm font-medium">Data/Hora</th>
-                                            <th className="text-left py-3 px-4 text-white/50 text-sm font-medium">Status</th>
-                                            <th className="text-left py-3 px-4 text-white/50 text-sm font-medium">Valor Total</th>
+                                        <tr className="border-b border-white/5 text-gray-500 uppercase text-xs tracking-wider">
+                                            <th className="py-3 px-4">#ID</th>
+                                            <th className="py-3 px-4">Qtd</th>
+                                            <th className="py-3 px-4">Produto</th>
+                                            <th className="py-3 px-4">Data/Hora</th>
+                                            <th className="py-3 px-4">Status</th>
+                                            <th className="py-3 px-4 text-right">Valor Total</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                        {mockPurchases.length > 0 ? (
-                                            mockPurchases.map((purchase) => (
-                                                <tr key={purchase.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                                                    <td className="py-3 px-4 text-white/80 text-sm">{purchase.id}</td>
-                                                    <td className="py-3 px-4 text-white/80 text-sm">{purchase.quantity}</td>
-                                                    <td className="py-3 px-4 text-white/80 text-sm">{purchase.product}</td>
-                                                    <td className="py-3 px-4 text-white/80 text-sm">{purchase.date}</td>
-                                                    <td className="py-3 px-4">{getStatusBadge(purchase.status)}</td>
-                                                    <td className="py-3 px-4 text-amber-400 text-sm font-medium">{purchase.total}</td>
-                                                </tr>
-                                            ))
-                                        ) : (
-                                            <tr>
-                                                <td colSpan={6} className="py-8 text-center text-white/30">
-                                                    Nenhum dado encontrado
+                                    <tbody className="divide-y divide-white/5">
+                                        {vipHistory.map((item: any) => (
+                                            <tr key={item.id} className="hover:bg-white/5 transition-colors">
+                                                <td className="py-4 px-4 text-gray-400">#{item.id}</td>
+                                                <td className="py-4 px-4 text-white">1</td>
+                                                <td className="py-4 px-4 text-white font-medium">{item.item}</td>
+                                                <td className="py-4 px-4 text-gray-400">{item.date}</td>
+                                                <td className="py-4 px-4">
+                                                    <span className="px-2 py-1 rounded bg-green-500/10 text-green-500 text-xs font-bold uppercase">
+                                                        {item.status}
+                                                    </span>
                                                 </td>
+                                                <td className="py-4 px-4 text-right text-[#FFD700] font-bold">{item.price}</td>
                                             </tr>
-                                        )}
+                                        ))}
                                     </tbody>
                                 </table>
                             </div>
@@ -167,92 +115,65 @@ export default function PainelTabs({ userData }: PainelTabsProps) {
                     </div>
                 )}
 
-                {/* Histórico de VIPs */}
-                {activeTab === 'vips' && (
-                    <div>
-                        <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
-                            <Crown className="w-5 h-5 text-amber-500" />
-                            Seus VIPs
-                        </h3>
-
-                        <div className="overflow-x-auto">
-                            <table className="w-full">
-                                <thead>
-                                    <tr className="border-b border-white/10">
-                                        <th className="text-left py-3 px-4 text-white/50 text-sm font-medium">Tipo</th>
-                                        <th className="text-left py-3 px-4 text-white/50 text-sm font-medium">Início</th>
-                                        <th className="text-left py-3 px-4 text-white/50 text-sm font-medium">Término</th>
-                                        <th className="text-left py-3 px-4 text-white/50 text-sm font-medium">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {mockVips.length > 0 ? (
-                                        mockVips.map((vip) => (
-                                            <tr key={vip.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                                                <td className="py-3 px-4 text-white/80 text-sm flex items-center gap-2">
-                                                    <Crown className="w-4 h-4 text-amber-500" />
-                                                    {vip.type}
-                                                </td>
-                                                <td className="py-3 px-4 text-white/80 text-sm">{vip.startDate}</td>
-                                                <td className="py-3 px-4 text-white/80 text-sm">{vip.endDate}</td>
-                                                <td className="py-3 px-4">{getStatusBadge(vip.status)}</td>
-                                            </tr>
-                                        ))
-                                    ) : (
-                                        <tr>
-                                            <td colSpan={4} className="py-8 text-center text-white/30">
-                                                Nenhum VIP encontrado
-                                            </td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                )}
-
-                {/* Comprar Diamantes */}
-                {activeTab === 'diamantes' && (
-                    <div>
-                        <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
-                            <Package className="w-5 h-5 text-amber-500" />
-                            Pacotes de Diamantes
-                        </h3>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                            {diamondPackages.map((pkg) => (
-                                <div
-                                    key={pkg.amount}
-                                    className={`relative p-6 rounded-xl border transition-all duration-300 hover:scale-[1.02] ${pkg.popular
-                                            ? 'bg-gradient-to-br from-amber-500/20 to-amber-600/10 border-amber-500/50'
-                                            : 'bg-[#252540] border-white/10 hover:border-white/20'
-                                        }`}
-                                >
-                                    {pkg.popular && (
-                                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-amber-500 rounded-full text-xs font-bold text-black">
-                                            POPULAR
-                                        </div>
-                                    )}
-
-                                    <div className="text-center">
-                                        <div className="text-3xl mb-2">💎</div>
-                                        <div className="text-2xl font-bold text-white mb-1">{pkg.amount.toLocaleString()}</div>
-                                        <div className="text-white/50 text-sm mb-4">Diamantes</div>
-                                        <div className="text-amber-400 font-bold text-lg mb-4">{pkg.price}</div>
-                                        <button
-                                            onClick={() => handleBuyDiamonds(pkg.amount)}
-                                            className="w-full py-2 bg-amber-500 hover:bg-amber-600 rounded-lg text-black text-sm font-semibold transition-all duration-300"
-                                        >
-                                            COMPRAR
-                                        </button>
+                {activeTab === 'history' && (
+                    <div className="animate-fade-in-up">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Detailed VIP Cards could go here */}
+                            {vipHistory.map((item: any) => (
+                                <div key={item.id} className="p-6 rounded-2xl bg-[#0a0a10] border border-white/10 flex items-center gap-4">
+                                    <div className="w-12 h-12 rounded-full bg-[#FFD700]/10 flex items-center justify-center text-[#FFD700]">
+                                        <Crown className="w-6 h-6" />
+                                    </div>
+                                    <div>
+                                        <h4 className="text-white font-bold">{item.item}</h4>
+                                        <p className="text-gray-500 text-sm flex items-center gap-1">
+                                            <Clock className="w-3 h-3" /> Ativo desde {item.date}
+                                        </p>
+                                    </div>
+                                    <div className="ml-auto">
+                                        <span className="px-3 py-1 rounded bg-green-500/10 text-green-500 text-xs font-bold uppercase flex items-center gap-1">
+                                            <CheckCircle className="w-3 h-3" /> Ativo
+                                        </span>
                                     </div>
                                 </div>
                             ))}
                         </div>
+                    </div>
+                )}
 
-                        <p className="mt-4 text-white/30 text-xs text-center">
-                            * Pagamento processado via Mercado Pago. Os diamantes serão creditados automaticamente.
+                {activeTab === 'diamonds' && (
+                    <div className="animate-fade-in-up text-center py-12">
+                        <div className="w-20 h-20 bg-[#FFD700]/10 rounded-full flex items-center justify-center mx-auto mb-6 text-[#FFD700]">
+                            <ShoppingCart className="w-10 h-10" />
+                        </div>
+                        <h2 className="text-2xl font-bold text-white mb-2">Loja de Diamantes</h2>
+                        <p className="text-gray-400 mb-8 max-w-md mx-auto">
+                            Adquira diamantes para comprar itens exclusivos, VIPs e melhorias na cidade.
                         </p>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                            {[
+                                { amount: 1000, price: 'R$ 10,00', bonus: null },
+                                { amount: 3000, price: 'R$ 25,00', bonus: '+10%' },
+                                { amount: 6500, price: 'R$ 50,00', bonus: '+15%' },
+                                { amount: 15000, price: 'R$ 100,00', bonus: '+30%' },
+                            ].map((pkg, i) => (
+                                <div key={i} className="group p-6 rounded-2xl bg-[#0a0a10] border border-white/10 hover:border-[#FFD700] hover:bg-[#FFD700]/5 cursor-pointer transition-all">
+                                    {pkg.bonus && (
+                                        <div className="inline-block px-2 py-1 bg-green-500 text-white text-[10px] font-bold uppercase rounded mb-3">
+                                            Bônus {pkg.bonus}
+                                        </div>
+                                    )}
+                                    <div className="text-2xl font-black text-white group-hover:text-[#FFD700] mb-1">
+                                        {pkg.amount}
+                                    </div>
+                                    <div className="text-xs text-gray-500 uppercase tracking-widest mb-4">Diamantes</div>
+                                    <button className="w-full py-2 bg-white/10 group-hover:bg-[#FFD700] group-hover:text-black rounded-lg font-bold text-sm transition-colors">
+                                        {pkg.price}
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 )}
             </div>

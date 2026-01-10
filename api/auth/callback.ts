@@ -50,7 +50,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             user_id: 0,
             whitelisted: false,
             banned: false,
-            groups: []
+            groups: [] as string[]
         };
 
         if (process.env.DB_HOST) {
@@ -80,6 +80,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                         userData.whitelisted = !!userRows[0].whitelisted;
                         userData.banned = !!userRows[0].banned;
                     }
+
+                    // Query Datatable for Groups (VIP) and Money
+                    // Attempt to read 'vRP:datatable' from vrp_user_data
+                    const [dataRows]: any = await connection.execute(
+                        'SELECT dvalue FROM vrp_user_data WHERE user_id = ? AND dkey = "vRP:datatable"',
+                        [userData.user_id]
+                    );
+
+                    if (dataRows.length > 0) {
+                        try {
+                            const datatable = JSON.parse(dataRows[0].dvalue);
+                            if (datatable.groups) {
+                                userData.groups = Object.keys(datatable.groups);
+                            }
+                        } catch (e) {
+                            console.error('Failed to parse vRP datatable', e);
+                        }
+                    }
                 }
 
                 await connection.end();
@@ -98,7 +116,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 // Game Data
                 gameId: userData.user_id,
                 whitelisted: userData.whitelisted,
-                banned: userData.banned
+                banned: userData.banned,
+                groups: userData.groups
             },
             JWT_SECRET,
             { expiresIn: '7d' }
