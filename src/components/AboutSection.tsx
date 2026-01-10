@@ -87,7 +87,7 @@ const AboutSection = () => {
                     <div className="inline-block p-10 rounded-3xl glass-strong glow-blue">
                         <p className="text-white/40 text-sm uppercase tracking-widest mb-4">IP do Servidor</p>
                         <code className="text-2xl md:text-3xl font-mono text-white font-medium">
-                            connect cfx.re/join/sprp
+                            jogar.sprp.lat
                         </code>
                     </div>
                 </div>

@@ -6,7 +6,7 @@ import Footer from '../components/Footer';
 
 const HomePage = () => {
     const handlePlayNow = () => {
-        window.open('https://discord.gg/sprp', '_blank');
+        window.open('https://discord.gg/pj2fQNqU', '_blank');
     };
 
     return (

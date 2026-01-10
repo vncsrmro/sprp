@@ -141,8 +141,8 @@ const LGPD = () => {
                             <ol className="list-decimal pl-6 text-gray-400 space-y-3">
                                 <li>
                                     Abrir um ticket no nosso Discord oficial:{' '}
-                                    <a href="https://discord.gg/sprp" target="_blank" rel="noopener noreferrer" className="text-sprp-neon-blue hover:underline">
-                                        discord.gg/sprp
+                                    <a href="https://discord.gg/pj2fQNqU" target="_blank" rel="noopener noreferrer" className="text-sprp-neon-blue hover:underline">
+                                        discord.gg/pj2fQNqU
                                     </a>
                                 </li>
                                 <li>

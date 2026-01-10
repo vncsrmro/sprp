@@ -152,7 +152,7 @@ const PoliticaDePrivacidade = () => {
                         </p>
                         <ul className="list-none text-gray-400 space-y-2">
                             <li><strong>E-mail:</strong> <a href="mailto:privacidade@sprp.gg" className="text-sprp-neon-blue hover:underline">privacidade@sprp.gg</a></li>
-                            <li><strong>Discord:</strong> <a href="https://discord.gg/sprp" target="_blank" rel="noopener noreferrer" className="text-sprp-neon-blue hover:underline">discord.gg/sprp</a></li>
+                            <li><strong>Discord:</strong> <a href="https://discord.gg/pj2fQNqU" target="_blank" rel="noopener noreferrer" className="text-sprp-neon-blue hover:underline">discord.gg/pj2fQNqU</a></li>
                         </ul>
                     </section>
                 </div>

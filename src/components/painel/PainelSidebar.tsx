@@ -110,7 +110,7 @@ export default function PainelSidebar({ isLoggedIn, onLogin, onLogout, userData 
                     {showDropdown && (
                         <div className="absolute top-full left-0 right-0 mt-2 bg-[#252540] rounded-lg border border-white/10 overflow-hidden z-10">
                             <button
-                                onClick={() => window.open('https://discord.gg/sprp', '_blank')}
+                                onClick={() => window.open('https://discord.gg/pj2fQNqU', '_blank')}
                                 className="w-full flex items-center gap-3 px-4 py-3 text-white hover:bg-white/5 transition-colors"
                             >
                                 <Ticket className="w-4 h-4" />

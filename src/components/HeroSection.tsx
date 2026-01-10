@@ -5,8 +5,8 @@ const HeroSection = () => {
     const [copied, setCopied] = useState(false);
     const [isLoaded, setIsLoaded] = useState(false);
 
-    const SERVER_IP = 'connect cfx.re/join/sprp';
-    const DISCORD_URL = 'https://discord.gg/sprp';
+    const SERVER_IP = 'jogar.sprp.lat';
+    const DISCORD_URL = 'https://discord.gg/pj2fQNqU';
 
     useEffect(() => {
         setIsLoaded(true);

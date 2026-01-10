@@ -12,8 +12,8 @@ export default function PainelHeader({ isLoggedIn, userName, userAvatar }: Paine
         { label: 'HOME', href: '/', icon: Home },
         { label: 'PAINEL', href: '/painel', icon: User, active: true },
         { label: 'VIP', href: '/painel?tab=diamantes', icon: Crown },
-        { label: 'NOTÍCIAS', href: 'https://discord.gg/sprp', icon: Newspaper, external: true },
-        { label: 'COMO JOGAR', href: 'https://discord.gg/sprp', icon: HelpCircle, external: true },
+        { label: 'NOTÍCIAS', href: 'https://discord.gg/pj2fQNqU', icon: Newspaper, external: true },
+        { label: 'COMO JOGAR', href: 'https://discord.gg/pj2fQNqU', icon: HelpCircle, external: true },
     ];
 
     return (
@@ -64,7 +64,7 @@ export default function PainelHeader({ isLoggedIn, userName, userAvatar }: Paine
                     <div className="flex items-center gap-3">
                         {/* Open Ticket Button */}
                         <a
-                            href="https://discord.gg/sprp"
+                            href="https://discord.gg/pj2fQNqU"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-600 rounded-lg text-black text-sm font-semibold transition-all duration-300"

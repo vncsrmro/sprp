@@ -25,8 +25,8 @@ const Footer = () => {
                         <h4 className="text-sm font-semibold text-white/60 uppercase tracking-wider mb-5">Navegação</h4>
                         <ul className="space-y-3">
                             {[
-                                { label: 'Discord', href: 'https://discord.gg/sprp', external: true },
-                                { label: 'Whitelist', href: 'https://discord.gg/sprp', external: true },
+                                { label: 'Discord', href: 'https://discord.gg/pj2fQNqU', external: true },
+                                { label: 'Whitelist', href: 'https://discord.gg/pj2fQNqU', external: true },
                                 { label: 'Sobre', href: '#sobre', external: false },
                             ].map((link, i) => (
                                 <li key={i}>
