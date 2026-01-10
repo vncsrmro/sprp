@@ -1,33 +1,86 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import PainelHeader from '../components/painel/PainelHeader';
 import PainelSidebar from '../components/painel/PainelSidebar';
 import PainelTabs from '../components/painel/PainelTabs';
 import Footer from '../components/Footer';
 
-// Mock user data - Replace with real API data when backend is ready
-const mockUserData = {
-    name: 'JOGADOR_SPRP',
-    accountId: '115600',
-    steamHex: 'steam:11000014bb664ac',
-    email: 'jogador@email.com',
-    avatar: 'https://avatars.steamstatic.com/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb_full.jpg',
-    wlStatus: 'approved' as const,
-};
+// Mock user data - Removed as we now fetch from token
+// const mockUserData = { ... }
 
 export default function PainelCidadao() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [userData, setUserData] = useState<typeof mockUserData | null>(null);
+    const [userData, setUserData] = useState<any | null>(null);
+
+    useEffect(() => {
+        // Check for token in URL
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get('token');
+
+        if (token) {
+            try {
+                // Basic JWT decode (payload is the second part)
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+
+                const user = JSON.parse(jsonPayload);
+
+                setUserData({
+                    name: user.name,
+                    accountId: user.steamId, // Using SteamID as account ID for now
+                    steamHex: `steam:${BigInt(user.steamId).toString(16)}`, // Convert to hex if needed or just display
+                    email: 'steam@linked.account', // We don't get email from Steam usually
+                    avatar: user.avatar,
+                    wlStatus: 'approved', // Default for now, should come from DB
+                });
+                setIsLoggedIn(true);
+
+                // Clean URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+
+                // Save to local storage (optional, for persistence)
+                localStorage.setItem('sprp_token', token);
+            } catch (e) {
+                console.error('Invalid token', e);
+            }
+        } else {
+            // Check local storage
+            const storedToken = localStorage.getItem('sprp_token');
+            if (storedToken) {
+                // Reuse logic or validate (omitted for brevity)
+                // For now, let's just re-decode
+                try {
+                    const base64Url = storedToken.split('.')[1];
+                    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                    const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
+                        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                    }).join(''));
+                    const user = JSON.parse(jsonPayload);
+                    setUserData({
+                        name: user.name,
+                        accountId: user.steamId,
+                        steamHex: `steam:${BigInt(user.steamId).toString(16)}`,
+                        email: 'steam@linked.account',
+                        avatar: user.avatar,
+                        wlStatus: 'approved',
+                    });
+                    setIsLoggedIn(true);
+                } catch { }
+            }
+        }
+    }, []);
 
     const handleLogin = () => {
-        // Simulate Steam login - Replace with real OAuth when backend is ready
-        // In production, this would redirect to Steam OAuth
-        setIsLoggedIn(true);
-        setUserData(mockUserData);
+        // Redirect to Vercel Function
+        window.location.href = '/api/auth/steam';
     };
 
     const handleLogout = () => {
         setIsLoggedIn(false);
         setUserData(null);
+        localStorage.removeItem('sprp_token');
     };
 
     return (
