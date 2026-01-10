@@ -1,11 +1,16 @@
-import { useState, useCallback } from 'react';
-import { Copy, Check, ExternalLink, Gamepad2, Users, Shield, Zap } from 'lucide-react';
+import { useState, useCallback, useEffect } from 'react';
+import { Copy, Check, ArrowRight, Sparkles } from 'lucide-react';
 
 const HeroSection = () => {
     const [copied, setCopied] = useState(false);
+    const [isLoaded, setIsLoaded] = useState(false);
 
     const SERVER_IP = 'connect cfx.re/join/sprp';
     const DISCORD_URL = 'https://discord.gg/sprp';
+
+    useEffect(() => {
+        setIsLoaded(true);
+    }, []);
 
     const copyIP = useCallback(() => {
         navigator.clipboard.writeText(SERVER_IP);
@@ -18,133 +23,168 @@ const HeroSection = () => {
     }, []);
 
     return (
-        <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-            {/* Background with gradient overlay */}
-            <div className="absolute inset-0 bg-sprp-dark">
-                {/* Animated gradient background */}
-                <div className="absolute inset-0 bg-gradient-to-br from-sprp-neon-blue/10 via-transparent to-sprp-neon-purple/10" />
-
-                {/* Grid pattern */}
+        <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black">
+            {/* Gradient Mesh Background */}
+            <div className="absolute inset-0">
+                {/* Primary gradient orb */}
                 <div
-                    className="absolute inset-0 opacity-20"
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full opacity-30"
                     style={{
-                        backgroundImage: `
-              linear-gradient(rgba(0, 212, 255, 0.1) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(0, 212, 255, 0.1) 1px, transparent 1px)
-            `,
-                        backgroundSize: '80px 80px',
+                        background: 'radial-gradient(circle, rgba(0,212,255,0.4) 0%, rgba(168,85,247,0.2) 40%, transparent 70%)',
+                        filter: 'blur(60px)',
                     }}
                 />
 
-                {/* Glowing orbs */}
-                <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-sprp-neon-blue/20 rounded-full blur-[120px] animate-pulse" />
-                <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-sprp-neon-purple/20 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1s' }} />
-                <div className="absolute top-1/2 right-1/3 w-64 h-64 bg-sprp-neon-gold/10 rounded-full blur-[80px] animate-pulse" style={{ animationDelay: '2s' }} />
+                {/* Secondary accent orbs */}
+                <div
+                    className="absolute top-1/4 left-1/4 w-[400px] h-[400px] rounded-full opacity-20 float"
+                    style={{
+                        background: 'radial-gradient(circle, rgba(0,212,255,0.5) 0%, transparent 70%)',
+                        filter: 'blur(40px)',
+                        animationDelay: '0s',
+                    }}
+                />
+                <div
+                    className="absolute bottom-1/4 right-1/4 w-[300px] h-[300px] rounded-full opacity-20 float"
+                    style={{
+                        background: 'radial-gradient(circle, rgba(168,85,247,0.5) 0%, transparent 70%)',
+                        filter: 'blur(40px)',
+                        animationDelay: '2s',
+                    }}
+                />
+
+                {/* Subtle grid */}
+                <div
+                    className="absolute inset-0 opacity-[0.03]"
+                    style={{
+                        backgroundImage: `linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)`,
+                        backgroundSize: '100px 100px',
+                    }}
+                />
             </div>
 
             {/* Content */}
-            <div className="relative z-10 max-w-6xl mx-auto px-4 text-center">
-                {/* Logo */}
-                <div className="mb-8 flex justify-center">
-                    <img
-                        src="/sprp-logo.png"
-                        alt="SPRP Logo"
-                        className="w-32 h-auto md:w-40 drop-shadow-[0_0_30px_rgba(0,212,255,0.5)] hover:scale-105 transition-transform duration-500"
-                    />
+            <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
+                {/* Logo with glow */}
+                <div
+                    className={`mb-10 transition-all duration-1000 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+                >
+                    <div className="relative inline-block">
+                        <div className="absolute inset-0 blur-3xl opacity-50">
+                            <img src="/sprp-logo.png" alt="" className="w-28 h-auto" />
+                        </div>
+                        <img
+                            src="/sprp-logo.png"
+                            alt="SPRP Logo"
+                            className="relative w-28 h-auto mx-auto hover:scale-105 transition-transform duration-500"
+                        />
+                    </div>
                 </div>
 
-                {/* Badge */}
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm text-gray-300 mb-6 backdrop-blur-sm">
-                    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                    Servidor Online • 500+ Jogadores
-                </div>
-
-                {/* Main Title */}
-                <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-black text-white mb-4 tracking-tight">
-                    <span className="block">O MELHOR RP</span>
-                    <span className="block bg-gradient-to-r from-sprp-neon-blue via-sprp-neon-purple to-sprp-neon-gold bg-clip-text text-transparent">
-                        DE SÃO PAULO
+                {/* Status Pill */}
+                <div
+                    className={`inline-flex items-center gap-3 px-5 py-2.5 rounded-full glass mb-8 transition-all duration-1000 delay-100 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+                >
+                    <span className="relative flex h-2.5 w-2.5">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
                     </span>
+                    <span className="text-sm text-white/70 font-medium">Servidor Online</span>
+                    <span className="w-px h-4 bg-white/10"></span>
+                    <span className="text-sm text-white/50">500+ jogadores ativos</span>
+                </div>
+
+                {/* Main Headline */}
+                <h1
+                    className={`text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[0.9] mb-6 transition-all duration-1000 delay-200 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+                >
+                    <span className="block text-white">Seu roleplay</span>
+                    <span className="block gradient-text">começa aqui.</span>
                 </h1>
 
                 {/* Subtitle */}
-                <p className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-10">
-                    Viva experiências únicas no servidor de roleplay mais imersivo do Brasil.
-                    Economia realista, mapa customizado e comunidade ativa.
+                <p
+                    className={`text-lg md:text-xl text-white/50 max-w-xl mx-auto mb-10 leading-relaxed transition-all duration-1000 delay-300 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+                >
+                    O servidor de GTA RP mais imersivo de São Paulo.
+                    Economia real, mapa exclusivo e comunidade ativa.
                 </p>
 
                 {/* CTA Buttons */}
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
+                <div
+                    className={`flex flex-col sm:flex-row items-center justify-center gap-4 mb-12 transition-all duration-1000 delay-400 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+                >
+                    {/* Primary CTA */}
                     <button
                         onClick={openDiscord}
-                        className="group flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-sprp-neon-blue to-sprp-neon-purple text-white font-bold text-lg rounded-xl hover:scale-105 transition-all duration-300 shadow-[0_0_30px_rgba(0,212,255,0.4)] hover:shadow-[0_0_50px_rgba(0,212,255,0.6)]"
+                        className="group relative flex items-center gap-3 px-8 py-4 bg-white text-black font-semibold rounded-full hover:bg-white/90 transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(255,255,255,0.2)]"
                     >
-                        <Gamepad2 className="w-6 h-6 group-hover:rotate-12 transition-transform" />
-                        JOGAR AGORA
-                        <ExternalLink className="w-4 h-4 opacity-50" />
+                        <Sparkles className="w-5 h-5" />
+                        Começar a jogar
+                        <ArrowRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
                     </button>
 
+                    {/* Secondary CTA */}
                     <button
                         onClick={copyIP}
-                        className="flex items-center gap-3 px-8 py-4 bg-white/5 border border-white/20 text-white font-semibold text-lg rounded-xl hover:bg-white/10 hover:border-sprp-neon-blue/50 transition-all duration-300 backdrop-blur-sm"
+                        className="flex items-center gap-3 px-8 py-4 rounded-full glass hover:bg-white/10 transition-all duration-300 font-medium text-white/80 hover:text-white"
                     >
                         {copied ? (
                             <>
-                                <Check className="w-5 h-5 text-green-400" />
-                                IP Copiado!
+                                <Check className="w-5 h-5 text-emerald-400" />
+                                <span className="text-emerald-400">Copiado!</span>
                             </>
                         ) : (
                             <>
-                                <Copy className="w-5 h-5 text-sprp-neon-blue" />
-                                Copiar IP do Servidor
+                                <Copy className="w-5 h-5" />
+                                Copiar IP
                             </>
                         )}
                     </button>
                 </div>
 
-                {/* Server IP Display */}
-                <div className="inline-block px-6 py-3 rounded-lg bg-black/30 border border-white/10 backdrop-blur-sm mb-16">
-                    <code className="text-sprp-neon-gold font-mono text-lg">
-                        {SERVER_IP}
-                    </code>
+                {/* Server IP */}
+                <div
+                    className={`transition-all duration-1000 delay-500 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+                >
+                    <div className="inline-flex items-center gap-3 px-6 py-3 rounded-2xl bg-white/[0.02] border border-white/[0.05]">
+                        <div className="w-2 h-2 rounded-full bg-sprp-neon-blue animate-pulse"></div>
+                        <code className="text-white/60 font-mono text-sm">
+                            {SERVER_IP}
+                        </code>
+                    </div>
                 </div>
 
-                {/* Stats */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
-                    <div className="p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm hover:border-sprp-neon-blue/30 transition-colors">
-                        <Users className="w-8 h-8 text-sprp-neon-blue mx-auto mb-3" />
-                        <div className="text-3xl font-bold text-white mb-1">5K+</div>
-                        <div className="text-sm text-gray-400">Jogadores</div>
-                    </div>
-
-                    <div className="p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm hover:border-sprp-neon-purple/30 transition-colors">
-                        <Shield className="w-8 h-8 text-sprp-neon-purple mx-auto mb-3" />
-                        <div className="text-3xl font-bold text-white mb-1">24/7</div>
-                        <div className="text-sm text-gray-400">Staff Ativo</div>
-                    </div>
-
-                    <div className="p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm hover:border-sprp-neon-gold/30 transition-colors">
-                        <Zap className="w-8 h-8 text-sprp-neon-gold mx-auto mb-3" />
-                        <div className="text-3xl font-bold text-white mb-1">60+</div>
-                        <div className="text-sm text-gray-400">FPS Garantido</div>
-                    </div>
-
-                    <div className="p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm hover:border-green-500/30 transition-colors">
-                        <div className="w-8 h-8 mx-auto mb-3 flex items-center justify-center">
-                            <span className="text-2xl">🏆</span>
+                {/* Stats Row */}
+                <div
+                    className={`mt-20 grid grid-cols-2 md:grid-cols-4 gap-4 transition-all duration-1000 delay-[600ms] ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+                >
+                    {[
+                        { value: '5K+', label: 'Jogadores', delay: '0ms' },
+                        { value: '24/7', label: 'Suporte', delay: '50ms' },
+                        { value: '60+', label: 'FPS', delay: '100ms' },
+                        { value: '99.9%', label: 'Uptime', delay: '150ms' },
+                    ].map((stat, index) => (
+                        <div
+                            key={index}
+                            className="group p-6 rounded-2xl glass card-hover cursor-default"
+                        >
+                            <div className="text-2xl md:text-3xl font-bold text-white mb-1 group-hover:gradient-text transition-all duration-300">
+                                {stat.value}
+                            </div>
+                            <div className="text-sm text-white/40">{stat.label}</div>
                         </div>
-                        <div className="text-3xl font-bold text-white mb-1">99.9%</div>
-                        <div className="text-sm text-gray-400">Uptime</div>
-                    </div>
+                    ))}
                 </div>
             </div>
 
-            {/* Scroll indicator */}
-            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-gray-500 animate-bounce">
-                <span className="text-sm">Role para baixo</span>
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                </svg>
+            {/* Scroll Indicator */}
+            <div className={`absolute bottom-8 left-1/2 -translate-x-1/2 transition-all duration-1000 delay-700 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
+                <div className="flex flex-col items-center gap-2">
+                    <span className="text-xs text-white/30 uppercase tracking-widest">Scroll</span>
+                    <div className="w-px h-8 bg-gradient-to-b from-white/20 to-transparent"></div>
+                </div>
             </div>
         </section>
     );
