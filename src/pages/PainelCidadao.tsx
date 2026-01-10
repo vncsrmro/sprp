@@ -29,18 +29,18 @@ export default function PainelCidadao() {
 
                 setUserData({
                     name: user.name,
-                    accountId: user.steamId, // Using SteamID as account ID for now
-                    steamHex: `steam:${BigInt(user.steamId).toString(16)}`, // Convert to hex if needed or just display
-                    email: 'steam@linked.account', // We don't get email from Steam usually
+                    accountId: user.gameId || 'N/A', // Real Game ID from DB
+                    steamHex: `steam:${BigInt(user.steamId).toString(16)}`,
+                    email: 'steam@linked.account',
                     avatar: user.avatar,
-                    wlStatus: 'approved', // Default for now, should come from DB
+                    wlStatus: user.whitelisted ? 'approved' : 'pending', // Real Status
                 });
                 setIsLoggedIn(true);
 
                 // Clean URL
                 window.history.replaceState({}, document.title, window.location.pathname);
 
-                // Save to local storage (optional, for persistence)
+                // Save to local storage
                 localStorage.setItem('sprp_token', token);
             } catch (e) {
                 console.error('Invalid token', e);
@@ -49,8 +49,6 @@ export default function PainelCidadao() {
             // Check local storage
             const storedToken = localStorage.getItem('sprp_token');
             if (storedToken) {
-                // Reuse logic or validate (omitted for brevity)
-                // For now, let's just re-decode
                 try {
                     const base64Url = storedToken.split('.')[1];
                     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -60,11 +58,11 @@ export default function PainelCidadao() {
                     const user = JSON.parse(jsonPayload);
                     setUserData({
                         name: user.name,
-                        accountId: user.steamId,
+                        accountId: user.gameId || 'N/A',
                         steamHex: `steam:${BigInt(user.steamId).toString(16)}`,
                         email: 'steam@linked.account',
                         avatar: user.avatar,
-                        wlStatus: 'approved',
+                        wlStatus: user.whitelisted ? 'approved' : 'pending',
                     });
                     setIsLoggedIn(true);
                 } catch { }

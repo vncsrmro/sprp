@@ -1,13 +1,20 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import axios from 'axios';
 import jwt from 'jsonwebtoken';
+import mysql from 'mysql2/promise';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     const STEAM_API_KEY = process.env.STEAM_API_KEY;
     const JWT_SECRET = process.env.JWT_SECRET || 'default_secret_please_change';
-
-    // Use VITE_APP_URL for redirection back to frontend
     const appUrl = process.env.VITE_APP_URL || `https://${process.env.VERCEL_URL}` || 'http://localhost:5173';
+
+    // DB Config
+    const dbConfig = {
+        host: process.env.DB_HOST,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASS,
+        database: process.env.DB_NAME,
+    };
 
     if (!STEAM_API_KEY) {
         return res.status(500).json({ error: 'STEAM_API_KEY is not defined' });
@@ -25,7 +32,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         // 2. Extract Steam ID
-        // claimed_id comes as: https://steamcommunity.com/openid/id/76561198000000000
         const claimedId = req.query['openid.claimed_id'] as string;
         const steamId = claimedId.split('/').pop();
 
@@ -37,23 +43,67 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const playersResponse = await axios.get(
             `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=${STEAM_API_KEY}&steamids=${steamId}`
         );
-
         const player = playersResponse.data.response.players[0];
 
-        // 4. Create Session Token (JWT)
+        // 4. Query Game Database for Real Data (vRP/Creative)
+        let userData = {
+            user_id: 0,
+            whitelisted: false,
+            banned: false,
+            groups: []
+        };
+
+        if (process.env.DB_HOST) {
+            try {
+                const connection = await mysql.createConnection(dbConfig);
+
+                // Convert SteamID64 (decimal) to Hex for vRP
+                // SteamID64 is BigInt, vRP uses 'steam:hex'
+                const steamHex = `steam:${BigInt(steamId).toString(16)}`;
+
+                // Query user_id
+                const [rows]: any = await connection.execute(
+                    'SELECT user_id FROM vrp_user_ids WHERE identifier = ?',
+                    [steamHex]
+                );
+
+                if (rows.length > 0) {
+                    userData.user_id = rows[0].user_id;
+
+                    // Query whitelist/banned status
+                    const [userRows]: any = await connection.execute(
+                        'SELECT whitelisted, banned FROM vrp_users WHERE id = ?',
+                        [userData.user_id]
+                    );
+
+                    if (userRows.length > 0) {
+                        userData.whitelisted = !!userRows[0].whitelisted;
+                        userData.banned = !!userRows[0].banned;
+                    }
+                }
+
+                await connection.end();
+            } catch (dbError) {
+                console.error('Database connection error:', dbError);
+                // Continue login even if DB fails, just with default data
+            }
+        }
+
+        // 5. Create Session Token (JWT)
         const token = jwt.sign(
             {
                 steamId: player.steamid,
                 name: player.personaname,
-                avatar: player.avatarfull
+                avatar: player.avatarfull,
+                // Game Data
+                gameId: userData.user_id,
+                whitelisted: userData.whitelisted,
+                banned: userData.banned
             },
             JWT_SECRET,
             { expiresIn: '7d' }
         );
 
-        // 5. Redirect back to frontend with token
-        // In a production app, checking if 'painel' is the intended destination is better, 
-        // but for now we redirect to /painel/callback or just /painel with a query param
         res.redirect(`${appUrl}/painel?token=${token}`);
 
     } catch (error) {
