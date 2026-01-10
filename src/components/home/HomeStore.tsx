@@ -1,4 +1,4 @@
-import { ShoppingBag, Diamond, Star, TrendingUp } from 'lucide-react';
+import { ShoppingBag } from 'lucide-react';
 
 const StarterPackCard = ({ title, price, items, discount, color }: any) => (
     <div className="relative group min-w-[300px] bg-[#0f0f1a] border border-white/5 p-1 rounded-2xl overflow-hidden hover:border-white/20 transition-all duration-300">
