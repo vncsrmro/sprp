@@ -184,6 +184,30 @@ export default function PainelCidadao() {
                             <p><span className="text-gray-400">Hex Buscado:</span> <span className="text-blue-300">{(userData as any).debug.searchHex}</span></p>
                             <p><span className="text-gray-400">Encontrado na HWID?</span> <span className={(userData as any).debug.hwidFound ? 'text-green-400' : 'text-red-400'}>{(userData as any).debug.hwidFound ? 'SIM' : 'NÃO'}</span></p>
                             <p><span className="text-gray-400">Fallback Accounts?</span> {(userData as any).debug.fallback}</p>
+
+                            {/* NEW: Database Schema Scan */}
+                            <div className="mt-2 border-t border-white/10 pt-2">
+                                <p className="text-blue-400 font-bold mb-1">🔍 Scanner de Banco de Dados:</p>
+
+                                <p className="mb-1"><span className="text-gray-400">Colunas Character:</span></p>
+                                <pre className="text-[10px] text-green-300 bg-black/50 p-1 rounded overflow-x-auto">
+                                    {JSON.stringify((userData as any).debug.charColumns || [], null, 2)}
+                                </pre>
+
+                                <p className="my-1"><span className="text-gray-400">Colunas Account:</span></p>
+                                <pre className="text-[10px] text-green-300 bg-black/50 p-1 rounded overflow-x-auto">
+                                    {JSON.stringify((userData as any).debug.accountColumns || [], null, 2)}
+                                </pre>
+
+                                {(userData as any).debug.charData?.Data && (
+                                    <>
+                                        <p className="my-1"><span className="text-gray-400">Amostra 'Data' (JSON?):</span></p>
+                                        <pre className="text-[10px] text-orange-300 bg-black/50 p-1 rounded overflow-x-auto">
+                                            {(userData as any).debug.charData.Data?.substring(0, 100)}...
+                                        </pre>
+                                    </>
+                                )}
+                            </div>
                             {(userData as any).debug.error && (
                                 <p className="mt-2 text-red-300 break-words bg-red-950/50 p-2 rounded">
                                     Error: {(userData as any).debug.error}
