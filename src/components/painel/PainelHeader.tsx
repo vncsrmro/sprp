@@ -29,31 +29,16 @@ export default function PainelHeader({ isLoggedIn, userName, userAvatar }: Paine
                     {/* Navigation */}
                     <nav className="hidden md:flex items-center gap-1">
                         {navItems.map((item) => (
-                            item.external ? (
-                                <a
-                                    key={item.label}
-                                    href={item.href}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${item.active
-                                        ? 'text-amber-400'
-                                        : 'text-white/60 hover:text-white'
-                                        }`}
-                                >
-                                    {item.label}
-                                </a>
-                            ) : (
-                                <Link
-                                    key={item.label}
-                                    to={item.href}
-                                    className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${item.active
-                                        ? 'text-amber-400'
-                                        : 'text-white/60 hover:text-white'
-                                        }`}
-                                >
-                                    {item.label}
-                                </Link>
-                            )
+                            <Link
+                                key={item.label}
+                                to={item.href}
+                                className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${item.active
+                                    ? 'text-amber-400'
+                                    : 'text-white/60 hover:text-white'
+                                    }`}
+                            >
+                                {item.label}
+                            </Link>
                         ))}
                     </nav>
 

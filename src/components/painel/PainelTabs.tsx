@@ -44,13 +44,13 @@ export default function PainelTabs({ userData }: PainelTabsProps) {
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
                         className={`flex-1 flex items-center justify-center gap-3 py-6 text-sm font-bold uppercase tracking-wider transition-all relative
-                            ${activeTab === tab.id ? 'text-[#FFD700]' : 'text-gray-500 hover:text-white'}
+                            ${activeTab === tab.id ? 'text-[#00d4ff]' : 'text-gray-500 hover:text-white'}
                         `}
                     >
-                        <tab.icon className={`w-5 h-5 ${activeTab === tab.id ? 'text-[#FFD700]' : 'text-gray-600'}`} />
+                        <tab.icon className={`w-5 h-5 ${activeTab === tab.id ? 'text-[#00d4ff]' : 'text-gray-600'}`} />
                         {tab.label}
                         {activeTab === tab.id && (
-                            <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#FFD700] shadow-[0_-2px_10px_rgba(255,215,0,0.5)]" />
+                            <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-[#00d4ff] to-[#a855f7] shadow-[0_-2px_10px_rgba(0,212,255,0.5)]" />
                         )}
                     </button>
                 ))}
