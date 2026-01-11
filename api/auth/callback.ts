@@ -54,132 +54,61 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             characterName: '',
             whitelisted: false,
             banned: false,
-            groups: [] as string[]
+            groups: [] as string[],
+            dbDebug: {
+                connection: 'Not Attempted',
+                searchHex: '',
+                hwidFound: false,
+                accountFound: true,
+                charFound: true,
+                fallback: 'None',
+                error: null as any
+            }
         };
-
         if (process.env.DB_HOST) {
             try {
-                console.log('Connecting to DB...', dbConfig.host);
+                // console.log('Connecting to DB...', dbConfig.host); // Debug log
                 const connection = await mysql.createConnection(dbConfig);
+                userData.dbDebug.connection = 'Success';
 
-                // Convert SteamID64 (decimal) to Hex for query
-                // Looking for 'steam:11000...' in hwid.Token
                 const steamHex = `steam:${BigInt(steamId).toString(16)}`.toLowerCase();
-                console.log('Searching for identifier:', steamHex);
+                const steamHexNoPrefix = `${BigInt(steamId).toString(16)}`.toLowerCase();
 
                 // 1. Find Account ID from HWID table (Creative Framework)
+                // Try aggressive search: with 'steam:', without 'steam:', uppercase, etc.
+                // We use multiple ORs to be sure.
                 let [hwidRows]: any = await connection.execute(
-                    'SELECT Account FROM hwid WHERE Token LIKE ?',
-                    [`%${steamHex}%`]
+                    'SELECT Account FROM hwid WHERE Token LIKE ? OR Token LIKE ?',
+                    [`%${steamHex}%`, `%${steamHexNoPrefix}%`]
                 );
 
+                userData.dbDebug.searchHex = steamHex;
+                userData.dbDebug.hwidFound = hwidRows.length > 0;
+
                 // Fallback: Check 'accounts' table directly if 'hwid' table search fails
-                // Some Creative versions store SteamHex in accounts.Token or accounts.Discord (rarely)
                 if (hwidRows.length === 0) {
-                    console.log('HWID table search empty. Trying accounts table fallback...');
                     const [accountFallbackRows]: any = await connection.execute(
-                        'SELECT id FROM accounts WHERE Token LIKE ?',
-                        [`%${steamHex}%`]
+                        'SELECT id FROM accounts WHERE Token LIKE ? OR Token LIKE ?',
+                        [`%${steamHex}%`, `%${steamHexNoPrefix}%`]
                     );
-                    if (accountFallbackRows.length > 0) {
-                        hwidRows = [{ Account: accountFallbackRows[0].id }];
-                        console.log('Found account via fallback search:', hwidRows);
-                    }
-                }
+                    avatar: player.avatarfull,
+                        // Game Data
+                        accountId: userData.accountId,
+                            passportId: userData.passportId,
+                                characterName: userData.characterName,
+                                    whitelisted: userData.whitelisted,
+                                        banned: userData.banned,
+                                            groups: userData.groups,
+                                                debug: userData.dbDebug // Pass debug info to frontend
+                },
+                JWT_SECRET,
+                    { expiresIn: '7d' }
+            );
 
-                console.log('HWID/Account Search result:', hwidRows);
+                res.redirect(`${appUrl}/painel?token=${token}`);
 
-                if (hwidRows.length > 0) {
-                    userData.accountId = hwidRows[0].Account;
-
-                    // 2. Query Account for Whitelist & Gems (and License to find Character)
-                    const [accountRows]: any = await connection.execute(
-                        'SELECT License, Whitelist, Banned, Gemstone FROM accounts WHERE id = ?',
-                        [userData.accountId]
-                    );
-
-                    console.log('Account Search result:', accountRows);
-
-                    if (accountRows.length > 0) {
-                        const account = accountRows[0];
-                        userData.whitelisted = !!account.Whitelist;
-                        userData.banned = !!account.Banned;
-                        // Map Gemstone to groups or similar purely for display if needed, 
-                        // but here we primarily need the Character ID for the passport
-
-                        // 3. Find Primary Character (Passport ID) using License
-                        if (account.License) {
-                            const [charRows]: any = await connection.execute(
-                                'SELECT id, Name, Lastname FROM characters WHERE License = ? AND Deleted = 0 ORDER BY id ASC LIMIT 1',
-                                [account.License]
-                            );
-
-                            console.log('Character Search result:', charRows);
-
-                            if (charRows.length > 0) {
-                                userData.passportId = charRows[0].id; // PASSPORT ID
-                                userData.characterName = `${charRows[0].Name} ${charRows[0].Lastname}`;
-                            }
-                        }
-
-                        // 4. Fetch permissions (VIPs)
-                        // In Creative, permissions might be by Account ID or Character ID depending on setup.
-                        // Based on user info: "Listar VIPs ativos (baseado em Gemstone/Premium)"
-                        // Query: SELECT Permission FROM permissions WHERE ...? 
-                        // Actually the user provided query uses JOIN on License.
-
-                        // Alternative simple query matching user's 'Listar VIPs ativos':
-                        // Check Gemstone as a 'group' for display?
-                        if (account.Gemstone > 0) {
-                            userData.groups.push(`💎 ${account.Gemstone} Gemas`);
-                        }
-
-                        // Try to get real permissions if possible.
-                        // Since we don't have a direct user_id -> permission table in the description (it says 'permissions' table has 'Members'?), 
-                        // it seems 'permissions' defines the group, but where is the link to the user?
-                        // "permissions (Grupos/VIPs)... id, Permission, Members..." - This looks like a group definition table, not user assignments.
-                        // Usually Creative uses `vrp_permissions` or similar, OR it's inside `accounts` columns.
-                        // But user said: "Listar VIPs ativos (baseado em Gemstone/Premium)... SELECT ... FROM accounts a ... LEFT JOIN permissions p..." 
-                        // Wait, the user's provided VIP query joins on License? "JOIN characters c ON c.License = a.License LEFT JOIN permissions p..."
-                        // The JOIN condition `p.Permission LIKE` in that query suggests it's filtering global permissions? 
-                        // No, typically there's a table linking User <-> Permission.
-                        // Standard Creative: check `vrp_permissions` or `information` table?
-                        // User said: "NÃO é vRP padrão... Não existe vrp_user_ids".
-
-                        // Let's stick to what we know: Whitelist, Banned, Gemstone, Passport ID.
-                        // For VIPs, I will add a placeholder or try to read typical Creative tables if they exist, 
-                        // but for now let's ensure ID and WL works.
-                    }
-                }
-
-                await connection.end();
-            } catch (dbError) {
-                console.error('Database connection error:', dbError);
+            } catch (error) {
+                console.error(error);
+                return res.status(500).json({ error: 'Internal Server Error' });
             }
         }
-
-        // 5. Create Session Token (JWT)
-        const token = jwt.sign(
-            {
-                steamId: player.steamid,
-                name: player.personaname, // Steam Name
-                avatar: player.avatarfull,
-                // Game Data
-                accountId: userData.accountId,
-                passportId: userData.passportId,
-                characterName: userData.characterName,
-                whitelisted: userData.whitelisted,
-                banned: userData.banned,
-                groups: userData.groups
-            },
-            JWT_SECRET,
-            { expiresIn: '7d' }
-        );
-
-        res.redirect(`${appUrl}/painel?token=${token}`);
-
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: 'Internal Server Error' });
-    }
-}

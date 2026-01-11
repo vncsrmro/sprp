@@ -169,6 +169,16 @@ export default function PainelCidadao() {
 
             {/* Footer */}
             <Footer />
+            {/* Debug Info (Only if failed) */}
+            {userData?.accountId === 'N/A' && (userData as any)?.debug && (
+                <div className="fixed bottom-4 right-4 p-4 bg-red-900/90 text-white text-xs rounded-lg max-w-sm z-50 border border-red-500">
+                    <p className="font-bold mb-1">⚠️ Debug de Conexão:</p>
+                    <p>Status: {(userData as any).debug.connection}</p>
+                    <p>Hex Buscado: {(userData as any).debug.searchHex}</p>
+                    <p>HWID Encontrado: {(userData as any).debug.hwidFound ? 'SIM' : 'NÃO'}</p>
+                    <p>Erro: {(userData as any).debug.error?.substring(0, 100) || 'Nenhum'}</p>
+                </div>
+            )}
         </div>
     );
 }
