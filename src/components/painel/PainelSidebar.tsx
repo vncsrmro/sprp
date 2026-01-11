@@ -24,7 +24,7 @@ export default function PainelSidebar({ isLoggedIn, onLogout, userData }: Painel
 
     return (
         <div className="bg-[#10101a] rounded-3xl p-6 border border-white/5 h-full flex flex-col relative">
-            <span className="absolute top-2 right-4 text-[9px] text-gray-600 font-mono opacity-50">v2.2 BUILD</span>
+            <span className="absolute top-2 right-4 text-[9px] text-gray-600 font-mono opacity-50">v2.3 BUILD</span>
             {/* User Profile Card */}
             <div className="flex flex-col items-center mb-10">
                 <div className="relative mb-4 group">
