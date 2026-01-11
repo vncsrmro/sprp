@@ -8,6 +8,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const JWT_SECRET = process.env.JWT_SECRET || 'default_secret_please_change';
     const appUrl = process.env.VITE_APP_URL || `https://${process.env.VERCEL_URL}` || 'http://localhost:5173';
 
+    console.log('API Callback hit. DB_HOST present:', !!process.env.DB_HOST);
+
     // DB Config
     const dbConfig = {
         host: process.env.DB_HOST,
@@ -55,11 +57,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         if (process.env.DB_HOST) {
             try {
+                console.log('Connecting to DB...', dbConfig.host);
                 const connection = await mysql.createConnection(dbConfig);
 
                 // Convert SteamID64 (decimal) to Hex for vRP
                 // SteamID64 is BigInt, vRP uses 'steam:hex'
                 const steamHex = `steam:${BigInt(steamId).toString(16)}`;
+                console.log('Searching for identifier:', steamHex);
 
                 // Query user_id
                 const [rows]: any = await connection.execute(
@@ -67,16 +71,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     [steamHex]
                 );
 
+                console.log('User ID search result:', rows);
+
                 if (rows.length > 0) {
                     userData.user_id = rows[0].user_id;
 
-                    // Query whitelist/banned status
+                    // Query whitelist/banned from vrp_users
                     const [userRows]: any = await connection.execute(
                         'SELECT whitelisted, banned FROM vrp_users WHERE id = ?',
                         [userData.user_id]
                     );
 
+                    console.log('User status result:', userRows);
+
                     if (userRows.length > 0) {
+                        // vRP often stores 1/0 as whitelist status
                         userData.whitelisted = !!userRows[0].whitelisted;
                         userData.banned = !!userRows[0].banned;
                     }
