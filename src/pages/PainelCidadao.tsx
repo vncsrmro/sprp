@@ -169,14 +169,29 @@ export default function PainelCidadao() {
 
             {/* Footer */}
             <Footer />
-            {/* Debug Info (Only if failed) */}
-            {userData?.accountId === 'N/A' && (userData as any)?.debug && (
-                <div className="fixed bottom-4 right-4 p-4 bg-red-900/90 text-white text-xs rounded-lg max-w-sm z-50 border border-red-500">
-                    <p className="font-bold mb-1">⚠️ Debug de Conexão:</p>
-                    <p>Status: {(userData as any).debug.connection}</p>
-                    <p>Hex Buscado: {(userData as any).debug.searchHex}</p>
-                    <p>HWID Encontrado: {(userData as any).debug.hwidFound ? 'SIM' : 'NÃO'}</p>
-                    <p>Erro: {(userData as any).debug.error?.substring(0, 100) || 'Nenhum'}</p>
+            {/* Debug Info (Always show if N/A, handling missing debug data) */}
+            {userData?.accountId === 'N/A' && (
+                <div className="fixed bottom-4 right-4 p-4 bg-zinc-900/95 text-white text-xs rounded-lg max-w-md z-50 border border-red-500 shadow-2xl backdrop-blur-sm">
+                    <p className="font-bold text-red-400 mb-2 border-b border-red-500/30 pb-1">⚠️ Falha na Recuperação de Dados</p>
+
+                    {(userData as any)?.debug ? (
+                        <div className="space-y-1 font-mono">
+                            <p><span className="text-gray-400">Status Conexão:</span> <span className={(userData as any).debug.connection === 'Success' ? 'text-green-400' : 'text-red-400'}>{(userData as any).debug.connection}</span></p>
+                            <p><span className="text-gray-400">Hex Buscado:</span> <span className="text-blue-300">{(userData as any).debug.searchHex}</span></p>
+                            <p><span className="text-gray-400">Encontrado na HWID?</span> <span className={(userData as any).debug.hwidFound ? 'text-green-400' : 'text-red-400'}>{(userData as any).debug.hwidFound ? 'SIM' : 'NÃO'}</span></p>
+                            <p><span className="text-gray-400">Fallback Accounts?</span> {(userData as any).debug.fallback}</p>
+                            {(userData as any).debug.error && (
+                                <p className="mt-2 text-red-300 break-words bg-red-950/50 p-2 rounded">
+                                    Error: {(userData as any).debug.error}
+                                </p>
+                            )}
+                        </div>
+                    ) : (
+                        <p className="text-orange-400">
+                            Nenhuma informação de debug recebida do servidor.<br />
+                            Possível erro fatal antes da geração do token.
+                        </p>
+                    )}
                 </div>
             )}
         </div>
