@@ -121,7 +121,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
                         // DEBUG: Capture column names
                         (userData.dbDebug as any).accountColumns = Object.keys(account);
-                        (userData.dbDebug as any).accountData = account; // CAREFUL: This might check for 'Premium', 'Vip', etc.
+                        // (userData.dbDebug as any).accountData = ... REMOVED to prevent crash
 
                         // 3. Find Primary Character (Passport ID) using License
                         if (account.License) {
@@ -135,9 +135,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                                 userData.characterName = `${charRows[0].Name} ${charRows[0].Lastname}`;
 
 
-                                // DEBUG: Capture char columns (Avoiding full data dump to prevent recursion/crashes)
+
+                                // DEBUG: Capture ONLY column keys, NEVER row data (Crash prevention V3)
                                 (userData.dbDebug as any).charColumns = Object.keys(charRows[0]);
-                                (userData.dbDebug as any).charData = { ...charRows[0], Data: undefined }; // Exclude potentially huge/circular 'Data' field from main dump, handle separately if needed
+                                // (userData.dbDebug as any).charData = ... REMOVED to prevent crash
 
                                 // 4. Probe for Permissions (Standard Creative/vRP approach + New vrp_user_data)
                                 try {
