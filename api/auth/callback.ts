@@ -134,11 +134,38 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                                 userData.passportId = charRows[0].id;
                                 userData.characterName = `${charRows[0].Name} ${charRows[0].Lastname}`;
 
-                                // DEBUG: Capture char columns
-                                (userData.dbDebug as any).charColumns = Object.keys(charRows[0]);
-                                (userData.dbDebug as any).charData = charRows[0];
 
-                                // 4. Probe for Permissions (Standard Creative/vRP approach)
+                                // DEBUG: Capture char columns (Avoiding full data dump to prevent recursion/crashes)
+                                (userData.dbDebug as any).charColumns = Object.keys(charRows[0]);
+                                (userData.dbDebug as any).charData = { ...charRows[0], Data: undefined }; // Exclude potentially huge/circular 'Data' field from main dump, handle separately if needed
+
+                                // 4. Probe for Permissions (Standard Creative/vRP approach + New vrp_user_data)
+                                try {
+                                    // Option A: vrp_permissions
+                                    try {
+                                        const [permRows]: any = await connection.execute(
+                                            'SELECT * FROM vrp_permissions WHERE user_id = ?',
+                                            [userData.passportId]
+                                        );
+                                        if (permRows.length > 0) {
+                                            userData.groups.push(...permRows.map((p: any) => p.perme || p.permission || 'UnkPerm'));
+                                        }
+                                    } catch (e) { }
+
+                                    // Option B: vrp_user_data (New Probe)
+                                    try {
+                                        const [userDataRows]: any = await connection.execute(
+                                            "SELECT dvalue FROM vrp_user_data WHERE user_id = ? AND dkey = 'vRP:datatable'",
+                                            [userData.passportId]
+                                        );
+                                        if (userDataRows.length > 0) {
+                                            const dataTable = JSON.parse(userDataRows[0].dvalue);
+                                            if (dataTable.groups) userData.groups.push(...Object.keys(dataTable.groups));
+                                        }
+                                    } catch (e) { }
+                                } catch (e: any) {
+                                    (userData.dbDebug as any).permTableError = e.message;
+                                }
                                 try {
                                     // Try common permission table names
                                     // Option A: vrp_permissions
