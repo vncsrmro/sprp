@@ -16,7 +16,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         user: process.env.DB_USER,
         password: process.env.DB_PASS,
         database: process.env.DB_NAME,
+        connectTimeout: 10000 // 10 seconds timeout
     };
+
+    // Safe debug of config
+    const maskedHost = process.env.DB_HOST ? `${process.env.DB_HOST.substring(0, 3)}...***` : 'UNDEFINED';
+    console.log(`Attempting connection to: ${maskedHost}`);
 
     if (!STEAM_API_KEY) {
         return res.status(500).json({ error: 'STEAM_API_KEY is not defined' });
@@ -57,6 +62,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             groups: [] as string[],
             dbDebug: {
                 connection: 'Not Attempted',
+                hostUsed: maskedHost,
                 searchHex: '',
                 hwidFound: false,
                 accountFound: true,
