@@ -27,7 +27,7 @@ export default function PainelSidebar({ isLoggedIn, onLogout, userData }: Painel
             {/* User Profile Card */}
             <div className="flex flex-col items-center mb-10">
                 <div className="relative mb-4 group">
-                    <div className="w-24 h-24 rounded-full p-1 bg-gradient-to-r from-[#FFD700] to-amber-600">
+                    <div className="w-24 h-24 rounded-full p-1 bg-gradient-to-r from-[#00d4ff] to-[#a855f7]">
                         <img
                             src={userData?.avatar}
                             alt={userData?.name}
@@ -41,7 +41,7 @@ export default function PainelSidebar({ isLoggedIn, onLogout, userData }: Painel
                 </div>
 
                 <h3 className="text-xl font-bold text-white mb-1">{userData?.name}</h3>
-                <p className="text-gray-400 text-sm font-medium mb-4">Account ID #{userData?.accountId}</p>
+                <p className="text-gray-400 text-sm font-medium mb-4">Passaporte #{userData?.accountId}</p>
 
                 {userData?.wlStatus !== 'approved' && (
                     <div className="px-4 py-2 bg-yellow-500/10 border border-yellow-500/20 rounded-lg text-yellow-500 text-xs font-bold uppercase tracking-wider flex items-center gap-2 mb-4">
@@ -57,7 +57,7 @@ export default function PainelSidebar({ isLoggedIn, onLogout, userData }: Painel
                 >
                     <p className="text-[10px] uppercase tracking-widest text-gray-500 mb-1">SteamHex:</p>
                     <div className="flex items-center justify-between">
-                        <code className="text-xs text-indigo-400 font-mono truncate max-w-[150px]">
+                        <code className="text-xs text-[#00d4ff] font-mono truncate max-w-[150px]">
                             {userData?.steamHex}
                         </code>
                         {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4 text-gray-600 group-hover:text-white transition-colors" />}
@@ -71,12 +71,12 @@ export default function PainelSidebar({ isLoggedIn, onLogout, userData }: Painel
                     to="/"
                     className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group"
                 >
-                    <Home className="w-5 h-5 text-gray-600 group-hover:text-[#FFD700] transition-colors" />
+                    <Home className="w-5 h-5 text-gray-600 group-hover:text-[#00d4ff] transition-colors" />
                     <span className="font-bold uppercase tracking-wide text-sm">Home</span>
                 </Link>
 
                 <div
-                    className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#FFD700] text-black shadow-lg shadow-amber-900/20"
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-[#00d4ff] to-[#a855f7] text-white shadow-lg shadow-cyan-900/20"
                 >
                     <LayoutDashboard className="w-5 h-5" />
                     <span className="font-bold uppercase tracking-wide text-sm">Painel</span>
