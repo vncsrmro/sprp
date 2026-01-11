@@ -1,6 +1,6 @@
 import { Home, LayoutDashboard, LogOut, Copy, Check } from 'lucide-react';
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 interface PainelSidebarProps {
     isLoggedIn: boolean;
@@ -9,9 +9,7 @@ interface PainelSidebarProps {
     userData: any;
 }
 
-export default function PainelSidebar({ isLoggedIn, onLogin, onLogout, userData }: PainelSidebarProps) {
-    const location = useLocation();
-    const isActive = (path: string) => location.pathname === path && !location.search.includes('tab=');
+export default function PainelSidebar({ isLoggedIn, onLogout, userData }: PainelSidebarProps) {
     const [copied, setCopied] = useState(false);
 
     const copyHex = () => {
