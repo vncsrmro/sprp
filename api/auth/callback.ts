@@ -106,8 +106,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     userData.accountId = hwidRows[0].Account;
 
                     // 2. Query Account for Whitelist & Gems
-                    const [accountRows]: any = await connection.execute(
-                    // 2. Query Account for Whitelist & Gems
                     // DEBUG: Fetching * to see all columns
                     const [accountRows]: any = await connection.execute(
                         'SELECT * FROM accounts WHERE id = ?',
