@@ -68,7 +68,8 @@ export default function PainelCidadao() {
                         steamHex: steamId ? `steam:${BigInt(steamId).toString(16)}` : null, // Derived from steamId if available
                         characterName,
                         wlStatus: whitelisted ? 'approved' : 'pending',
-                        groups: groups || []
+                        groups: groups || [],
+                        debug // Pass debug info to state
                     };
                     setUserData(newUserData);
                     setIsLoggedIn(true);
