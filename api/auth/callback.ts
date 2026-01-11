@@ -107,7 +107,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
                     // 2. Query Account for Whitelist & Gems
                     const [accountRows]: any = await connection.execute(
-                        'SELECT License, Whitelist, Banned, Gemstone FROM accounts WHERE id = ?',
+                    // 2. Query Account for Whitelist & Gems
+                    // DEBUG: Fetching * to see all columns
+                    const [accountRows]: any = await connection.execute(
+                        'SELECT * FROM accounts WHERE id = ?',
                         [userData.accountId]
                     );
 
@@ -116,16 +119,48 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                         userData.whitelisted = !!account.Whitelist;
                         userData.banned = !!account.Banned;
 
+                        // DEBUG: Capture column names
+                        (userData.dbDebug as any).accountColumns = Object.keys(account);
+                        (userData.dbDebug as any).accountData = account; // CAREFUL: This might check for 'Premium', 'Vip', etc.
+
                         // 3. Find Primary Character (Passport ID) using License
                         if (account.License) {
                             const [charRows]: any = await connection.execute(
-                                'SELECT id, Name, Lastname FROM characters WHERE License = ? AND Deleted = 0 ORDER BY id ASC LIMIT 1',
+                                'SELECT * FROM characters WHERE License = ? AND Deleted = 0 ORDER BY id ASC LIMIT 1',
                                 [account.License]
                             );
 
                             if (charRows.length > 0) {
                                 userData.passportId = charRows[0].id;
                                 userData.characterName = `${charRows[0].Name} ${charRows[0].Lastname}`;
+
+                                // DEBUG: Capture char columns
+                                (userData.dbDebug as any).charColumns = Object.keys(charRows[0]);
+                                (userData.dbDebug as any).charData = charRows[0];
+
+                                // 4. Probe for Permissions (Standard Creative/vRP approach)
+                                try {
+                                    // Try common permission table names
+                                    // Option A: vrp_permissions
+                                    const [permRows]: any = await connection.execute(
+                                        'SELECT * FROM vrp_permissions WHERE user_id = ?',
+                                        [userData.passportId]
+                                    );
+                                    if (permRows.length > 0) {
+                                        userData.groups.push(...permRows.map((p: any) => p.perme || p.permission || 'UnkPerm'));
+                                    }
+                                } catch (e: any) {
+                                    (userData.dbDebug as any).permTableError = e.message;
+                                }
+
+                                // Option B: Check Character Data Column (often JSON)
+                                if (charRows[0].Data) {
+                                    try {
+                                        const dataJson = JSON.parse(charRows[0].Data);
+                                        if (dataJson.groups) userData.groups.push(...Object.keys(dataJson.groups));
+                                        if (dataJson.perm) userData.groups.push(...Object.keys(dataJson.perm));
+                                    } catch (e) { } // Not JSON
+                                }
                             } else {
                                 userData.dbDebug.charFound = false;
                             }
