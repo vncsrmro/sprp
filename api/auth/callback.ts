@@ -155,7 +155,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 whitelisted: userData.whitelisted,
                 banned: userData.banned,
                 groups: userData.groups,
-                debug: userData.dbDebug // Pass debug info to frontend
+                debug: userData.dbDebug || { error: 'DEBUG_OBJECT_MISSING_IN_BACKEND' }, // Pass debug info to frontend
+                timestamp: Date.now()
             },
             JWT_SECRET,
             { expiresIn: '7d' }

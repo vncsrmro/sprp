@@ -56,7 +56,9 @@ export default function PainelCidadao() {
                         return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
                     }).join(''));
                     // Parse token data
-                    const { name, avatar, accountId, passportId, characterName, whitelisted, groups, steamId } = JSON.parse(jsonPayload) as any;
+                    const parsedToken = JSON.parse(jsonPayload);
+                    console.log('Parsed Token Data:', parsedToken); // Debug log for user to check console
+                    const { name, avatar, accountId, passportId, characterName, whitelisted, groups, steamId, debug } = parsedToken as any;
 
                     const newUserData = {
                         name,
@@ -172,7 +174,7 @@ export default function PainelCidadao() {
             {/* Debug Info (Always show if N/A, handling missing debug data) */}
             {userData?.accountId === 'N/A' && (
                 <div className="fixed bottom-4 right-4 p-4 bg-zinc-900/95 text-white text-xs rounded-lg max-w-md z-50 border border-red-500 shadow-2xl backdrop-blur-sm">
-                    <p className="font-bold text-red-400 mb-2 border-b border-red-500/30 pb-1">⚠️ Falha na Recuperação de Dados</p>
+                    <p className="font-bold text-red-400 mb-2 border-b border-red-500/30 pb-1">⚠️ Falha na Conexão (v2)</p>
 
                     {(userData as any)?.debug ? (
                         <div className="space-y-1 font-mono">
