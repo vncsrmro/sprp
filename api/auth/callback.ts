@@ -64,16 +64,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
                 // Convert SteamID64 (decimal) to Hex for query
                 // Looking for 'steam:11000...' in hwid.Token
-                const steamHex = `steam:${BigInt(steamId).toString(16)}`;
+                const steamHex = `steam:${BigInt(steamId).toString(16)}`.toLowerCase();
                 console.log('Searching for identifier:', steamHex);
 
                 // 1. Find Account ID from HWID table (Creative Framework)
-                const [hwidRows]: any = await connection.execute(
+                let [hwidRows]: any = await connection.execute(
                     'SELECT Account FROM hwid WHERE Token LIKE ?',
                     [`%${steamHex}%`]
                 );
 
-                console.log('HWID Search result:', hwidRows);
+                // Fallback: Check 'accounts' table directly if 'hwid' table search fails
+                // Some Creative versions store SteamHex in accounts.Token or accounts.Discord (rarely)
+                if (hwidRows.length === 0) {
+                    console.log('HWID table search empty. Trying accounts table fallback...');
+                    const [accountFallbackRows]: any = await connection.execute(
+                        'SELECT id FROM accounts WHERE Token LIKE ?',
+                        [`%${steamHex}%`]
+                    );
+                    if (accountFallbackRows.length > 0) {
+                        hwidRows = [{ Account: accountFallbackRows[0].id }];
+                        console.log('Found account via fallback search:', hwidRows);
+                    }
+                }
+
+                console.log('HWID/Account Search result:', hwidRows);
 
                 if (hwidRows.length > 0) {
                     userData.accountId = hwidRows[0].Account;
