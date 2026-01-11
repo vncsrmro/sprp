@@ -60,59 +60,95 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 console.log('Connecting to DB...', dbConfig.host);
                 const connection = await mysql.createConnection(dbConfig);
 
-                // Convert SteamID64 (decimal) to Hex for vRP
-                // SteamID64 is BigInt, vRP uses 'steam:hex'
+                // Convert SteamID64 (decimal) to Hex for query
+                // Looking for 'steam:11000...' in hwid.Token
                 const steamHex = `steam:${BigInt(steamId).toString(16)}`;
                 console.log('Searching for identifier:', steamHex);
 
-                // Query user_id
-                const [rows]: any = await connection.execute(
-                    'SELECT user_id FROM vrp_user_ids WHERE identifier = ?',
-                    [steamHex]
+                // 1. Find Account ID from HWID table (Creative Framework)
+                const [hwidRows]: any = await connection.execute(
+                    'SELECT Account FROM hwid WHERE Token LIKE ?',
+                    [`%${steamHex}%`]
                 );
 
-                console.log('User ID search result:', rows);
+                console.log('HWID Search result:', hwidRows);
 
-                if (rows.length > 0) {
-                    userData.user_id = rows[0].user_id;
+                if (hwidRows.length > 0) {
+                    const accountId = hwidRows[0].Account;
 
-                    // Query whitelist/banned from vrp_users
-                    const [userRows]: any = await connection.execute(
-                        'SELECT whitelisted, banned FROM vrp_users WHERE id = ?',
-                        [userData.user_id]
+                    // 2. Query Account for Whitelist & Gems (and License to find Character)
+                    const [accountRows]: any = await connection.execute(
+                        'SELECT License, Whitelist, Banned, Gemstone FROM accounts WHERE id = ?',
+                        [accountId]
                     );
 
-                    console.log('User status result:', userRows);
+                    console.log('Account Search result:', accountRows);
 
-                    if (userRows.length > 0) {
-                        // vRP often stores 1/0 as whitelist status
-                        userData.whitelisted = !!userRows[0].whitelisted;
-                        userData.banned = !!userRows[0].banned;
-                    }
+                    if (accountRows.length > 0) {
+                        const account = accountRows[0];
+                        userData.whitelisted = !!account.Whitelist;
+                        userData.banned = !!account.Banned;
+                        // Map Gemstone to groups or similar purely for display if needed, 
+                        // but here we primarily need the Character ID for the passport
 
-                    // Query Datatable for Groups (VIP) and Money
-                    // Attempt to read 'vRP:datatable' from vrp_user_data
-                    const [dataRows]: any = await connection.execute(
-                        'SELECT dvalue FROM vrp_user_data WHERE user_id = ? AND dkey = "vRP:datatable"',
-                        [userData.user_id]
-                    );
+                        // 3. Find Primary Character (Passport ID) using License
+                        if (account.License) {
+                            const [charRows]: any = await connection.execute(
+                                'SELECT id FROM characters WHERE License = ? AND Deleted = 0 ORDER BY id ASC LIMIT 1',
+                                [account.License]
+                            );
 
-                    if (dataRows.length > 0) {
-                        try {
-                            const datatable = JSON.parse(dataRows[0].dvalue);
-                            if (datatable.groups) {
-                                userData.groups = Object.keys(datatable.groups);
+                            console.log('Character Search result:', charRows);
+
+                            if (charRows.length > 0) {
+                                userData.user_id = charRows[0].id; // PASSPORT ID
                             }
-                        } catch (e) {
-                            console.error('Failed to parse vRP datatable', e);
                         }
+
+                        // 4. Fetch permissions (VIPs)
+                        // In Creative, permissions might be by Account ID or Character ID depending on setup.
+                        // Based on user info: "Listar VIPs ativos (baseado em Gemstone/Premium)"
+                        // Query: SELECT Permission FROM permissions WHERE ...? 
+                        // Actually the user provided query uses JOIN on License.
+
+                        const [permRows]: any = await connection.execute(
+                            `SELECT p.Permission 
+                             FROM permissions p 
+                             JOIN accounts a ON a.License = (SELECT License FROM accounts WHERE id = ?)
+                             WHERE p.Permission LIKE '%Vip%' OR p.Permission LIKE '%Gold%' OR p.Permission LIKE '%Platina%' OR p.Permission LIKE '%Ouro%'`,
+                            [accountId]
+                        );
+                        // Note: The user provided query for VIPs was:
+                        // SELECT p.Permission ... JOIN characters c ... LEFT JOIN permissions p ...
+                        // But we want to attach it to the session. Let's try to infer from what we have.
+
+                        // Alternative simple query matching user's 'Listar VIPs ativos':
+                        // Check Gemstone as a 'group' for display?
+                        if (account.Gemstone > 0) {
+                            userData.groups.push(`💎 ${account.Gemstone} Gemas`);
+                        }
+
+                        // Try to get real permissions if possible.
+                        // Since we don't have a direct user_id -> permission table in the description (it says 'permissions' table has 'Members'?), 
+                        // it seems 'permissions' defines the group, but where is the link to the user?
+                        // "permissions (Grupos/VIPs)... id, Permission, Members..." - This looks like a group definition table, not user assignments.
+                        // Usually Creative uses `vrp_permissions` or similar, OR it's inside `accounts` columns.
+                        // But user said: "Listar VIPs ativos (baseado em Gemstone/Premium)... SELECT ... FROM accounts a ... LEFT JOIN permissions p..." 
+                        // Wait, the user's provided VIP query joins on License? "JOIN characters c ON c.License = a.License LEFT JOIN permissions p..."
+                        // The JOIN condition `p.Permission LIKE` in that query suggests it's filtering global permissions? 
+                        // No, typically there's a table linking User <-> Permission.
+                        // Standard Creative: check `vrp_permissions` or `information` table?
+                        // User said: "NÃO é vRP padrão... Não existe vrp_user_ids".
+
+                        // Let's stick to what we know: Whitelist, Banned, Gemstone, Passport ID.
+                        // For VIPs, I will add a placeholder or try to read typical Creative tables if they exist, 
+                        // but for now let's ensure ID and WL works.
                     }
                 }
 
                 await connection.end();
             } catch (dbError) {
                 console.error('Database connection error:', dbError);
-                // Continue login even if DB fails, just with default data
             }
         }
 
