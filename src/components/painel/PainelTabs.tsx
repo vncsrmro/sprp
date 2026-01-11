@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { User, Crown, ShoppingCart, Search, CreditCard, Clock, CheckCircle } from 'lucide-react';
+import { User, Crown, ShoppingCart, CreditCard, Clock, CheckCircle } from 'lucide-react';
 
 interface PainelTabsProps {
     userData: any;
