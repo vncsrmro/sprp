@@ -179,6 +179,7 @@ export default function PainelCidadao() {
 
                     {(userData as any)?.debug ? (
                         <div className="space-y-1 font-mono">
+                            <p><span className="text-gray-400">Host Alvo:</span> <span className="text-yellow-200">{(userData as any).debug.hostUsed || 'N/A'}</span></p>
                             <p><span className="text-gray-400">Status Conexão:</span> <span className={(userData as any).debug.connection === 'Success' ? 'text-green-400' : 'text-red-400'}>{(userData as any).debug.connection}</span></p>
                             <p><span className="text-gray-400">Hex Buscado:</span> <span className="text-blue-300">{(userData as any).debug.searchHex}</span></p>
                             <p><span className="text-gray-400">Encontrado na HWID?</span> <span className={(userData as any).debug.hwidFound ? 'text-green-400' : 'text-red-400'}>{(userData as any).debug.hwidFound ? 'SIM' : 'NÃO'}</span></p>
