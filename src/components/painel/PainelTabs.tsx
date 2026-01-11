@@ -60,18 +60,11 @@ export default function PainelTabs({ userData }: PainelTabsProps) {
             <div className="p-8">
                 {activeTab === 'data' && (
                     <div className="animate-fade-in-up">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                        <div className="mb-8">
                             <div className="space-y-2">
                                 <label className="text-gray-500 text-xs font-bold uppercase tracking-widest pl-1">Nome</label>
                                 <div className="bg-[#0a0a10] border border-white/10 rounded-xl p-4 text-white font-medium">
                                     {userData?.name}
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-gray-500 text-xs font-bold uppercase tracking-widest pl-1">Email</label>
-                                <div className="bg-[#0a0a10] border border-white/10 rounded-xl p-4 text-white font-medium flex justify-between items-center text-gray-400">
-                                    ••••••••••••••••
-                                    <Search className="w-4 h-4 cursor-pointer hover:text-white" />
                                 </div>
                             </div>
                         </div>
