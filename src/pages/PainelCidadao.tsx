@@ -55,18 +55,25 @@ export default function PainelCidadao() {
                     const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
                         return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
                     }).join(''));
-                    const user = JSON.parse(jsonPayload);
-                    setUserData({
-                        name: user.name,
-                        accountId: user.gameId || 'N/A',
-                        steamHex: `steam:${BigInt(user.steamId).toString(16)}`,
-                        email: 'steam@linked.account',
-                        avatar: user.avatar,
-                        wlStatus: user.whitelisted ? 'approved' : 'pending',
-                        groups: user.groups || [] // Parse groups
-                    });
+                    // Parse token data
+                    const { name, avatar, accountId, passportId, characterName, whitelisted, groups, steamId } = JSON.parse(jsonPayload) as any;
+
+                    const newUserData = {
+                        name,
+                        avatar,
+                        accountId: accountId || 'N/A', // Account ID
+                        passportId, // Character ID
+                        steamHex: steamId ? `steam:${BigInt(steamId).toString(16)}` : null, // Derived from steamId if available
+                        characterName,
+                        wlStatus: whitelisted ? 'approved' : 'pending',
+                        groups: groups || []
+                    };
+                    setUserData(newUserData);
                     setIsLoggedIn(true);
-                } catch { }
+                } catch (e) {
+                    console.error('Error parsing stored token', e);
+                    localStorage.removeItem('sprp_token'); // Remove invalid token
+                }
             }
         }
     }, []);

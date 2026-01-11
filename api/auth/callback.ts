@@ -49,7 +49,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         // 4. Query Game Database for Real Data (vRP/Creative)
         let userData = {
-            user_id: 0,
+            accountId: 0,
+            passportId: 0,
+            characterName: '',
             whitelisted: false,
             banned: false,
             groups: [] as string[]
@@ -74,12 +76,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 console.log('HWID Search result:', hwidRows);
 
                 if (hwidRows.length > 0) {
-                    const accountId = hwidRows[0].Account;
+                    userData.accountId = hwidRows[0].Account;
 
                     // 2. Query Account for Whitelist & Gems (and License to find Character)
                     const [accountRows]: any = await connection.execute(
                         'SELECT License, Whitelist, Banned, Gemstone FROM accounts WHERE id = ?',
-                        [accountId]
+                        [userData.accountId]
                     );
 
                     console.log('Account Search result:', accountRows);
@@ -94,14 +96,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                         // 3. Find Primary Character (Passport ID) using License
                         if (account.License) {
                             const [charRows]: any = await connection.execute(
-                                'SELECT id FROM characters WHERE License = ? AND Deleted = 0 ORDER BY id ASC LIMIT 1',
+                                'SELECT id, Name, Lastname FROM characters WHERE License = ? AND Deleted = 0 ORDER BY id ASC LIMIT 1',
                                 [account.License]
                             );
 
                             console.log('Character Search result:', charRows);
 
                             if (charRows.length > 0) {
-                                userData.user_id = charRows[0].id; // PASSPORT ID
+                                userData.passportId = charRows[0].id; // PASSPORT ID
+                                userData.characterName = `${charRows[0].Name} ${charRows[0].Lastname}`;
                             }
                         }
 
@@ -110,17 +113,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                         // Based on user info: "Listar VIPs ativos (baseado em Gemstone/Premium)"
                         // Query: SELECT Permission FROM permissions WHERE ...? 
                         // Actually the user provided query uses JOIN on License.
-
-                        const [permRows]: any = await connection.execute(
-                            `SELECT p.Permission 
-                             FROM permissions p 
-                             JOIN accounts a ON a.License = (SELECT License FROM accounts WHERE id = ?)
-                             WHERE p.Permission LIKE '%Vip%' OR p.Permission LIKE '%Gold%' OR p.Permission LIKE '%Platina%' OR p.Permission LIKE '%Ouro%'`,
-                            [accountId]
-                        );
-                        // Note: The user provided query for VIPs was:
-                        // SELECT p.Permission ... JOIN characters c ... LEFT JOIN permissions p ...
-                        // But we want to attach it to the session. Let's try to infer from what we have.
 
                         // Alternative simple query matching user's 'Listar VIPs ativos':
                         // Check Gemstone as a 'group' for display?
@@ -156,10 +148,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const token = jwt.sign(
             {
                 steamId: player.steamid,
-                name: player.personaname,
+                name: player.personaname, // Steam Name
                 avatar: player.avatarfull,
                 // Game Data
-                gameId: userData.user_id,
+                accountId: userData.accountId,
+                passportId: userData.passportId,
+                characterName: userData.characterName,
                 whitelisted: userData.whitelisted,
                 banned: userData.banned,
                 groups: userData.groups

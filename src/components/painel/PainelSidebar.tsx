@@ -41,7 +41,7 @@ export default function PainelSidebar({ isLoggedIn, onLogout, userData }: Painel
                 </div>
 
                 <h3 className="text-xl font-bold text-white mb-1">{userData?.name}</h3>
-                <p className="text-gray-400 text-sm font-medium mb-4">Passaporte #{userData?.accountId}</p>
+                <p className="text-gray-400 text-sm font-medium mb-4">ID da Conta #{userData?.accountId}</p>
 
                 {userData?.wlStatus !== 'approved' && (
                     <div className="px-4 py-2 bg-yellow-500/10 border border-yellow-500/20 rounded-lg text-yellow-500 text-xs font-bold uppercase tracking-wider flex items-center gap-2 mb-4">
